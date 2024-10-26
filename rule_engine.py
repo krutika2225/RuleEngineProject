@@ -26,6 +26,7 @@ def parse_expression(tokens):
         return None
     
     token = tokens.pop(0)
+    
     if token == '(':
         left = parse_expression(tokens)
         operator = tokens.pop(0)
@@ -33,7 +34,14 @@ def parse_expression(tokens):
         tokens.pop(0)  # Remove ')'
         return RuleNode(operator, left, right)
     else:
-        return RuleNode(token)
+        # Return a RuleNode with the full condition for comparison
+        condition = token
+        # Check if there's a comparison operator and grab the next token
+        if len(tokens) > 0 and tokens[0] in ['>', '<', '==']:
+            operator = tokens.pop(0)
+            right_operand = tokens.pop(0)  # This should be the value to compare
+            condition = f"{condition} {operator} {right_operand}"
+        return RuleNode(condition)
 
 def combine_rules(rules):
     if not rules:
@@ -79,23 +87,3 @@ def evaluate(node, user_data):
         return evaluate(node.left, user_data) or evaluate(node.right, user_data)
     
     return False
-
-# Example usage
-if __name__ == "__main__":
-    # Get user input
-    user_data = {
-        'age': int(input("Enter age: ")),
-        'income': int(input("Enter income: ")),
-        'department': input("Enter department: ")
-    }
-    
-    # Example rules
-    rule1 = "age > 18 AND income > 30000"
-    rule2 = "department == 'Engineering'"
-    
-    # Combining rules
-    combined_rule = combine_rules([rule1, rule2])
-    
-    # Evaluating eligibility
-    eligibility = evaluate(combined_rule, user_data)
-    print("User eligibility:", "Eligible" if eligibility else "Not Eligible")
